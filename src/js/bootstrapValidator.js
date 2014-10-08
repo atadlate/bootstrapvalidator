@@ -1040,8 +1040,18 @@ if (typeof jQuery === 'undefined') {
 
                     case this.STATUS_VALID:
                         // If the field is valid (passes all validators)
-                        isValidField = ($allErrors.filter('[data-bv-result="' + this.STATUS_NOT_VALIDATED +'"]').length === 0)
-                                     ? ($allErrors.filter('[data-bv-result="' + this.STATUS_VALID +'"]').length === $allErrors.length)  // All validators are completed
+                        var $notValidated = $allErrors.filter('[data-bv-result="' + this.STATUS_NOT_VALIDATED +'"]');
+                        var dismissableLength = 0;
+                        var bsValidator = this;
+                        $notValidated.each( function (i) {
+                            var validatorName = $(this).attr('data-bv-validator');
+                            if (bsValidator.options.fields[field].validators[validatorName].enabled === false) {
+                                dismissableLength += 1;
+                            }
+                        });
+
+                        isValidField = ($allErrors.filter('[data-bv-result="' + this.STATUS_NOT_VALIDATED +'"]').length - dismissableLength === 0)
+                                     ? ($allErrors.filter('[data-bv-result="' + this.STATUS_VALID +'"]').length + dismissableLength === $allErrors.length)  // All validators are completed
                                      : null;                                                                                            // There are some validators that have not done
                         if (isValidField !== null) {
                             this.disableSubmitButtons(this.$submitButton ? !this.isValid() : !isValidField);
